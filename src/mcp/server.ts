@@ -1,5 +1,6 @@
 // Main MCP Server Implementation
 // Handles the Model Context Protocol server setup and integration with Autotask
+// Supports both local (env-based) and gateway (header-based) credential modes
 
 import { createServer, IncomingMessage, ServerResponse, Server as HttpServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
@@ -19,7 +20,7 @@ import {
 import { AutotaskService } from '../services/autotask.service.js';
 import { Logger } from '../utils/logger.js';
 import { McpServerConfig } from '../types/mcp.js';
-import { EnvironmentConfig } from '../utils/config.js';
+import { EnvironmentConfig, parseCredentialsFromHeaders, GatewayCredentials } from '../utils/config.js';
 import { AutotaskResourceHandler } from '../handlers/resource.handler.js';
 import { AutotaskToolHandler } from '../handlers/tool.handler.js';
 
@@ -180,10 +181,12 @@ export class AutotaskMcpServer {
 
   /**
    * Start with HTTP Streamable transport
+   * In gateway mode, credentials are extracted from request headers on each request
    */
   private async startHttpTransport(): Promise<void> {
     const port = this.envConfig?.transport?.port || 8080;
     const host = this.envConfig?.transport?.host || '0.0.0.0';
+    const isGatewayMode = this.envConfig?.auth?.mode === 'gateway';
 
     this.httpTransport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => randomUUID(),
@@ -193,15 +196,41 @@ export class AutotaskMcpServer {
     this.httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
-      // Health endpoint
+      // Health endpoint - no auth required
       if (url.pathname === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ status: 'ok', transport: 'http', timestamp: new Date().toISOString() }));
+        res.end(JSON.stringify({
+          status: 'ok',
+          transport: 'http',
+          authMode: isGatewayMode ? 'gateway' : 'env',
+          timestamp: new Date().toISOString()
+        }));
         return;
       }
 
       // MCP endpoint
       if (url.pathname === '/mcp') {
+        // In gateway mode, extract credentials from headers
+        if (isGatewayMode) {
+          const credentials = this.extractGatewayCredentials(req);
+          if (!credentials.username || !credentials.secret || !credentials.integrationCode) {
+            this.logger.warn('Gateway mode: Missing required credentials in headers', {
+              hasUsername: !!credentials.username,
+              hasSecret: !!credentials.secret,
+              hasIntegrationCode: !!credentials.integrationCode,
+            });
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              error: 'Missing credentials',
+              message: 'Gateway mode requires X-API-Key, X-API-Secret, and X-Integration-Code headers',
+              required: ['X-API-Key', 'X-API-Secret', 'X-Integration-Code']
+            }));
+            return;
+          }
+          // Update service credentials for this request
+          this.updateCredentials(credentials);
+        }
+
         this.httpTransport!.handleRequest(req, res);
         return;
       }
@@ -217,9 +246,54 @@ export class AutotaskMcpServer {
       this.httpServer!.listen(port, host, () => {
         this.logger.info(`Autotask MCP Server listening on http://${host}:${port}/mcp`);
         this.logger.info(`Health check available at http://${host}:${port}/health`);
+        this.logger.info(`Authentication mode: ${isGatewayMode ? 'gateway (header-based)' : 'env (environment variables)'}`);
         resolve();
       });
     });
+  }
+
+  /**
+   * Extract credentials from gateway-injected HTTP headers
+   */
+  private extractGatewayCredentials(req: IncomingMessage): GatewayCredentials {
+    const headers = req.headers as Record<string, string | string[] | undefined>;
+    return parseCredentialsFromHeaders(headers);
+  }
+
+  /**
+   * Update the Autotask service with new credentials
+   * Used in gateway mode where credentials come from request headers
+   */
+  private updateCredentials(credentials: GatewayCredentials): void {
+    // Re-create the service with new credentials
+    // Build autotask config, only including defined values
+    const autotaskConfig: McpServerConfig['autotask'] = {};
+    if (credentials.username) {
+      autotaskConfig.username = credentials.username;
+    }
+    if (credentials.secret) {
+      autotaskConfig.secret = credentials.secret;
+    }
+    if (credentials.integrationCode) {
+      autotaskConfig.integrationCode = credentials.integrationCode;
+    }
+    if (credentials.apiUrl) {
+      autotaskConfig.apiUrl = credentials.apiUrl;
+    }
+
+    const newConfig: McpServerConfig = {
+      name: this.envConfig?.server?.name || 'autotask-mcp',
+      version: this.envConfig?.server?.version || '1.0.0',
+      autotask: autotaskConfig
+    };
+
+    // Reinitialize service with new credentials
+    this.autotaskService = new AutotaskService(newConfig, this.logger);
+    this.resourceHandler = new AutotaskResourceHandler(this.autotaskService, this.logger);
+    this.toolHandler = new AutotaskToolHandler(this.autotaskService, this.logger);
+    this.toolHandler.setServer(this.server);
+
+    this.logger.debug('Updated Autotask credentials from gateway headers');
   }
 
   /**

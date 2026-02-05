@@ -1,3 +1,28 @@
+## [Unreleased] - Wyre Technology Fork
+
+### Added
+
+* **Gateway Mode**: Support for hosted MCP Gateway deployments with header-based credential injection
+  - New `AUTH_MODE` environment variable (`env` or `gateway`)
+  - Per-request credential extraction from `X-API-Key`, `X-API-Secret`, `X-Integration-Code` headers
+  - Health endpoint now reports `authMode` in gateway mode
+* **Migration Guide**: Documentation for migrating from local to hosted deployment (`docs/MIGRATION_GUIDE.md`)
+
+### Changed
+
+* Docker image registry changed to `ghcr.io/wyre-technology/autotask-mcp`
+* GitHub repository moved to `wyre-technology/autotask-mcp`
+* Container labels updated for Wyre Technology branding
+
+### Migration
+
+See [Migration Guide](docs/MIGRATION_GUIDE.md) for details on:
+- Continuing to use local mode (no changes required)
+- Switching to hosted MCP Gateway
+- Running your own gateway instance
+
+---
+
 ## [2.5.3](https://github.com/asachs01/autotask-mcp/compare/v2.5.2...v2.5.3) (2026-01-27)
 
 
