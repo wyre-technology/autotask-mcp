@@ -1,3 +1,19 @@
+# [2.6.0](https://github.com/wyre-technology/autotask-mcp/compare/v2.5.3...v2.6.0) (2026-02-10)
+
+
+### Bug Fixes
+
+* **security:** address code scanning vulnerabilities ([9fba187](https://github.com/wyre-technology/autotask-mcp/commit/9fba1879186a4c4c31482776a9a26152e163d7fe))
+* use autotask-node v2.1.0 parent-child URL pattern for note/time entry creates ([6397094](https://github.com/wyre-technology/autotask-mcp/commit/6397094fad52f2afef72f0f92d4e523af65b1f1a))
+* use correct parent-child URL patterns for child entity creation ([#24](https://github.com/wyre-technology/autotask-mcp/issues/24)) ([47f2a75](https://github.com/wyre-technology/autotask-mcp/commit/47f2a75b16de3af6b0f7581079f22fde575fe9d9))
+
+
+### Features
+
+* Add gateway mode for hosted MCP deployments ([14d5682](https://github.com/wyre-technology/autotask-mcp/commit/14d568223c9269de2d5e3e2eba5056351ca3e82d))
+* **billing:** Add BillingItems and BillingItemApprovalLevels support ([4c88034](https://github.com/wyre-technology/autotask-mcp/commit/4c880348d7a930b5277a810b89a3c54cddedb509)), closes [#21](https://github.com/wyre-technology/autotask-mcp/issues/21)
+* **time-entries:** add approvalStatus filter for un-posted entries ([d27f0ab](https://github.com/wyre-technology/autotask-mcp/commit/d27f0ab1fe8ba169069e3fb7de7010ead4b26636)), closes [#21](https://github.com/wyre-technology/autotask-mcp/issues/21)
+
 ## [Unreleased] - Wyre Technology Fork
 
 ### Added
