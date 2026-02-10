@@ -1,11 +1,14 @@
 # Autotask MCP Server
 
-[![Build Status](https://github.com/asachs01/autotask-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/asachs01/autotask-mcp/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/asachs01/autotask-mcp/graph/badge.svg)](https://codecov.io/gh/asachs01/autotask-mcp)
+[![Build Status](https://github.com/wyre-technology/autotask-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/wyre-technology/autotask-mcp/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/wyre-technology/autotask-mcp/graph/badge.svg)](https://codecov.io/gh/wyre-technology/autotask-mcp)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides AI assistants with structured access to Kaseya Autotask PSA data and operations.
+
+> **Note:** This is the Wyre Technology fork with support for hosted MCP Gateway deployments.
+> For migration from the original `asachs01/autotask-mcp`, see the [Migration Guide](docs/MIGRATION_GUIDE.md).
 
 <a href="https://glama.ai/mcp/servers/@asachs01/autotask-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@asachs01/autotask-mcp/badge" alt="Autotask MCP server" />
@@ -52,11 +55,13 @@ See [Installation](#installation) for Docker and from-source methods.
 
 - [Installation](#installation)
 - [Configuration](#configuration)
+  - [Gateway Mode](#gateway-mode)
 - [Usage](#usage)
 - [API Reference](#api-reference)
 - [ID-to-Name Mapping](#id-to-name-mapping)
 - [HTTP Transport](#http-transport)
 - [Docker Deployment](#docker-deployment)
+- [Migration Guide](docs/MIGRATION_GUIDE.md)
 - [Development](#development)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
@@ -118,7 +123,7 @@ docker run -d \
   -e AUTOTASK_SECRET="your-secret" \
   -e AUTOTASK_INTEGRATION_CODE="your-code" \
   --restart unless-stopped \
-  ghcr.io/asachs01/autotask-mcp:latest
+  ghcr.io/wyre-technology/autotask-mcp:latest
 
 # Verify
 curl http://localhost:8080/health
@@ -126,10 +131,30 @@ curl http://localhost:8080/health
 
 Clients connect to `http://host:8080/mcp` using MCP Streamable HTTP transport.
 
+**Gateway Mode (for MCP Gateway deployments):**
+
+When deploying behind an MCP Gateway that injects credentials via HTTP headers:
+
+```bash
+docker run -d \
+  --name autotask-mcp \
+  -p 8080:8080 \
+  -e AUTH_MODE=gateway \
+  --restart unless-stopped \
+  ghcr.io/wyre-technology/autotask-mcp:latest
+```
+
+The gateway injects credentials via headers:
+- `X-API-Key`: Autotask username
+- `X-API-Secret`: Autotask secret
+- `X-Integration-Code`: Autotask integration code
+
+See [Gateway Mode](#gateway-mode) for details.
+
 ### Option 3: From Source (Development)
 
 ```bash
-git clone https://github.com/asachs01/autotask-mcp.git
+git clone https://github.com/wyre-technology/autotask-mcp.git
 cd autotask-mcp
 npm ci && npm run build
 ```
@@ -165,7 +190,7 @@ Then point your MCP client at `dist/entry.js`:
 Create a `.env` file with your configuration:
 
 ```bash
-# Required Autotask API credentials
+# Required Autotask API credentials (Local Mode)
 AUTOTASK_USERNAME=your-api-user@example.com
 AUTOTASK_SECRET=your-secret-key
 AUTOTASK_INTEGRATION_CODE=your-integration-code
@@ -173,6 +198,9 @@ AUTOTASK_INTEGRATION_CODE=your-integration-code
 # Optional configuration
 AUTOTASK_API_URL=https://webservices.autotask.net/atservices/1.6/atws.asmx
 MCP_SERVER_NAME=autotask-mcp
+
+# Authentication mode
+AUTH_MODE=env               # env (local), gateway (hosted)
 
 # Transport (stdio for local/desktop, http for remote/Docker)
 MCP_TRANSPORT=stdio          # stdio, http
@@ -186,6 +214,39 @@ LOG_FORMAT=simple       # simple, json
 # Environment
 NODE_ENV=production
 ```
+
+### Gateway Mode
+
+When deployed behind an MCP Gateway (e.g., `mcp.wyre.ai`), the server operates in gateway mode where credentials are injected via HTTP headers on each request.
+
+**Enable Gateway Mode:**
+
+```bash
+AUTH_MODE=gateway
+MCP_TRANSPORT=http
+```
+
+**Expected Headers:**
+
+| Header | Description |
+|--------|-------------|
+| `X-API-Key` | Autotask API username (email) |
+| `X-API-Secret` | Autotask API secret key |
+| `X-Integration-Code` | Autotask integration code |
+| `X-API-URL` | (Optional) Custom Autotask API URL |
+
+**Health Check Response (Gateway Mode):**
+
+```json
+{
+  "status": "ok",
+  "transport": "http",
+  "authMode": "gateway",
+  "timestamp": "2026-02-05T10:00:00.000Z"
+}
+```
+
+For detailed migration instructions, see the [Migration Guide](docs/MIGRATION_GUIDE.md).
 
 💡 **Pro Tip**: Copy the above content to a `.env` file in your project root.
 

@@ -131,7 +131,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/wyre-technology/autotask-mcp
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -151,8 +151,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:v${{ steps.version.outputs.version }}
+            ghcr.io/wyre-technology/autotask-mcp:latest
+            ghcr.io/wyre-technology/autotask-mcp:v${{ steps.version.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -174,7 +174,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}:latest'
+          image-ref: 'ghcr.io/wyre-technology/autotask-mcp:latest'
           format: 'sarif'
           output: 'trivy-results.sarif'
 

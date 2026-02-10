@@ -65,6 +65,8 @@ ENV LOG_FORMAT=json
 ENV MCP_TRANSPORT=http
 ENV MCP_HTTP_PORT=8080
 ENV MCP_HTTP_HOST=0.0.0.0
+# Default to env mode for backward compatibility; set to 'gateway' for hosted deployment
+ENV AUTH_MODE=env
 
 # Define volume for logs
 VOLUME ["/app/logs"]
@@ -78,7 +80,7 @@ ARG COMMIT_SHA="unknown"
 ARG BUILD_DATE="unknown"
 
 # Labels for metadata
-LABEL maintainer="autotask-mcp@example.com"
+LABEL maintainer="engineering@wyre.ai"
 LABEL version="${VERSION}"
 LABEL description="Autotask MCP Server - Model Context Protocol server for Kaseya Autotask PSA"
 LABEL org.opencontainers.image.title="autotask-mcp"
@@ -86,8 +88,8 @@ LABEL org.opencontainers.image.description="Model Context Protocol server for Ka
 LABEL org.opencontainers.image.version="${VERSION}"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${COMMIT_SHA}"
-LABEL org.opencontainers.image.source="https://github.com/asachs01/autotask-mcp"
-LABEL org.opencontainers.image.documentation="https://github.com/asachs01/autotask-mcp/blob/main/README.md"
-LABEL org.opencontainers.image.url="https://github.com/asachs01/autotask-mcp/pkgs/container/autotask-mcp"
-LABEL org.opencontainers.image.vendor="Autotask MCP"
-LABEL org.opencontainers.image.licenses="MIT" 
+LABEL org.opencontainers.image.source="https://github.com/wyre-technology/autotask-mcp"
+LABEL org.opencontainers.image.documentation="https://github.com/wyre-technology/autotask-mcp/blob/main/README.md"
+LABEL org.opencontainers.image.url="https://github.com/wyre-technology/autotask-mcp/pkgs/container/autotask-mcp"
+LABEL org.opencontainers.image.vendor="Wyre Technology"
+LABEL org.opencontainers.image.licenses="Apache-2.0" 
