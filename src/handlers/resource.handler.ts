@@ -174,7 +174,7 @@ export class AutotaskResourceHandler {
    * Parse a resource URI to extract type and ID
    */
   private parseUri(uri: string): { resourceType: string; resourceId?: string } {
-    const match = uri.match(/^autotask:\/\/([^\/]+)(?:\/(.+))?$/);
+    const match = uri.match(/^autotask:\/\/([^/]+)(?:\/(.+))?$/);
     
     if (!match) {
       throw new Error(`Invalid Autotask URI format: ${uri}`);

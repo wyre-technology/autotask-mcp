@@ -371,15 +371,8 @@ export interface AutotaskQueryOptionsExtended extends AutotaskQueryOptions {
   lastActivityAfter?: string;
 }
 
-// Status enums (commonly used values)
-export enum TicketStatus {
-  New = 1,
-  InProgress = 5,
-  Complete = 5,
-  WaitingCustomer = 7,
-  WaitingVendor = 8,
-  Escalated = 9
-}
+// Note: Ticket status values are instance-specific picklist values.
+// Use autotask_list_ticket_statuses to discover valid values at runtime.
 
 export enum TicketPriority {
   Low = 1,
