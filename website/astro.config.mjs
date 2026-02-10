@@ -4,12 +4,12 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://asachs01.github.io',
+	site: 'https://wyre-technology.github.io',
 	base: '/autotask-mcp',
 	integrations: [
 		starlight({
 			title: 'Autotask MCP',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/asachs01/autotask-mcp' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/wyre-technology/autotask-mcp' }],
 			sidebar: [
 				{
 					label: 'Getting Started',

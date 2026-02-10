@@ -57,7 +57,7 @@ Add these secrets in your GitHub repository (`Settings > Secrets and variables >
 |--------|----------|-------------|
 | `GITHUB_TOKEN` | ✅ Auto | Automatically provided |
 | `NPM_TOKEN` | 🔶 Optional | For NPM publishing |
-| `DOCKERHUB_USERNAME` | ✅ Required | Your Docker Hub username (`asachs01`) |
+| `DOCKERHUB_USERNAME` | ✅ Required | Your Docker Hub username (`wyre-technology`) |
 | `DOCKERHUB_TOKEN` | ✅ Required | Docker Hub access token |
 
 ### 2. Docker Hub Token Setup
@@ -108,8 +108,8 @@ git push origin main
 - ✅ Distribution files as assets
 
 ### Docker Hub Images
-- ✅ `asachs01/autotask-mcp:latest`
-- ✅ `asachs01/autotask-mcp:v1.0.2`
+- ✅ `wyre-technology/autotask-mcp:latest`
+- ✅ `wyre-technology/autotask-mcp:v1.0.2`
 - ✅ Multi-architecture (AMD64 + ARM64)
 - ✅ Comprehensive metadata labels
 
@@ -125,7 +125,7 @@ git push origin main
 - Security scan results in **Security** tab
 
 ### Docker Hub
-- Visit: https://hub.docker.com/r/asachs01/autotask-mcp
+- Visit: https://hub.docker.com/r/wyre-technology/autotask-mcp
 - Verify image tags and metadata
 - Check download statistics
 
@@ -138,7 +138,7 @@ git push origin main
 ### Quick Start with Docker
 ```bash
 # Pull the latest image
-docker pull asachs01/autotask-mcp:latest
+docker pull wyre-technology/autotask-mcp:latest
 
 # Run with environment variables
 docker run -d \
@@ -146,14 +146,14 @@ docker run -d \
   -e AUTOTASK_USERNAME="your-user@company.com" \
   -e AUTOTASK_SECRET="your-secret" \
   -e AUTOTASK_INTEGRATION_CODE="your-code" \
-  asachs01/autotask-mcp:latest
+  wyre-technology/autotask-mcp:latest
 ```
 
 ### Docker Compose
 ```yaml
 services:
   autotask-mcp:
-    image: asachs01/autotask-mcp:latest
+    image: wyre-technology/autotask-mcp:latest
     environment:
       - AUTOTASK_USERNAME=${AUTOTASK_USERNAME}
       - AUTOTASK_SECRET=${AUTOTASK_SECRET}
@@ -204,4 +204,4 @@ Your release setup is working when you see:
 
 ---
 
-*Based on patterns from [autotask-node](https://github.com/asachs01/autotask-node) repository* 
+*Based on patterns from [autotask-node](https://github.com/wyre-technology/autotask-node) repository* 

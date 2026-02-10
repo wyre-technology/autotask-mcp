@@ -354,7 +354,7 @@ This server requires valid Autotask API credentials. Ensure you have:
 - AUTOTASK_SECRET (API secret key)
 - AUTOTASK_INTEGRATION_CODE (integration code)
 
-For more information, visit: https://github.com/asachs01/autotask-mcp
+For more information, visit: https://github.com/wyre-technology/autotask-mcp
 `.trim();
   }
 }
