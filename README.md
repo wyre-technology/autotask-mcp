@@ -7,18 +7,17 @@
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides AI assistants with structured access to Kaseya Autotask PSA data and operations.
 
-> **Note:** This is the Wyre Technology fork with support for hosted MCP Gateway deployments.
-> For migration from the original `asachs01/autotask-mcp`, see the [Migration Guide](docs/MIGRATION_GUIDE.md).
+> **Note:** This project is maintained by [Wyre Technology](https://github.com/wyre-technology). Previously hosted at `asachs01/autotask-mcp`.
 
-<a href="https://glama.ai/mcp/servers/@asachs01/autotask-mcp">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@asachs01/autotask-mcp/badge" alt="Autotask MCP server" />
+<a href="https://glama.ai/mcp/servers/@wyre-technology/autotask-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@wyre-technology/autotask-mcp/badge" alt="Autotask MCP server" />
 </a>
 
 ## Quick Start
 
 **Claude Desktop** — download, open, done:
 
-1. Download `autotask-mcp.mcpb` from the [latest release](https://github.com/asachs01/autotask-mcp/releases/latest)
+1. Download `autotask-mcp.mcpb` from the [latest release](https://github.com/wyre-technology/autotask-mcp/releases/latest)
 2. Open the file (double-click or drag into Claude Desktop)
 3. Enter your Autotask credentials when prompted (Username, Secret, Integration Code)
 
@@ -31,7 +30,7 @@ claude mcp add autotask-mcp \
   -e AUTOTASK_USERNAME=your-user@company.com \
   -e AUTOTASK_SECRET=your-secret \
   -e AUTOTASK_INTEGRATION_CODE=your-code \
-  -- npx -y github:asachs01/autotask-mcp
+  -- npx -y github:wyre-technology/autotask-mcp
 ```
 
 See [Installation](#installation) for Docker and from-source methods.
@@ -75,7 +74,7 @@ See [Installation](#installation) for Docker and from-source methods.
 
 The simplest method — no terminal, no JSON editing, no Node.js install required.
 
-1. Download `autotask-mcp.mcpb` from the [latest release](https://github.com/asachs01/autotask-mcp/releases/latest)
+1. Download `autotask-mcp.mcpb` from the [latest release](https://github.com/wyre-technology/autotask-mcp/releases/latest)
 2. Open the file (double-click or drag into Claude Desktop)
 3. Enter your Autotask credentials when prompted (Username, Secret, Integration Code)
 
@@ -86,7 +85,7 @@ claude mcp add autotask-mcp \
   -e AUTOTASK_USERNAME=your-user@company.com \
   -e AUTOTASK_SECRET=your-secret \
   -e AUTOTASK_INTEGRATION_CODE=your-code \
-  -- npx -y github:asachs01/autotask-mcp
+  -- npx -y github:wyre-technology/autotask-mcp
 ```
 
 ### Option 2: Docker
@@ -105,7 +104,7 @@ claude mcp add autotask-mcp \
         "-e", "AUTOTASK_SECRET=your-secret",
         "-e", "AUTOTASK_INTEGRATION_CODE=your-code",
         "--entrypoint", "node",
-        "ghcr.io/asachs01/autotask-mcp:latest",
+        "ghcr.io/wyre-technology/autotask-mcp:latest",
         "dist/entry.js"
       ]
     }
@@ -441,7 +440,7 @@ The Docker image defaults to **HTTP transport** on port 8080 — suitable for re
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/asachs01/autotask-mcp:latest
+docker pull ghcr.io/wyre-technology/autotask-mcp:latest
 
 # Run container with HTTP transport (default)
 docker run -d \
@@ -451,7 +450,7 @@ docker run -d \
   -e AUTOTASK_SECRET="your-secret-key" \
   -e AUTOTASK_INTEGRATION_CODE="your-integration-code" \
   --restart unless-stopped \
-  ghcr.io/asachs01/autotask-mcp:latest
+  ghcr.io/wyre-technology/autotask-mcp:latest
 
 # Verify it's running
 curl http://localhost:8080/health
@@ -463,7 +462,7 @@ For **stdio** usage with Claude Desktop, see [Installation Option 2](#option-2-d
 
 ```bash
 # Clone repository
-git clone https://github.com/asachs01/autotask-mcp.git
+git clone https://github.com/wyre-technology/autotask-mcp.git
 cd autotask-mcp
 
 # Create environment file
@@ -500,7 +499,7 @@ docker compose --profile dev up autotask-mcp-dev
 ### Setup
 
 ```bash
-git clone https://github.com/asachs01/autotask-mcp.git
+git clone https://github.com/wyre-technology/autotask-mcp.git
 cd autotask-mcp
 npm install
 ```
@@ -708,9 +707,9 @@ By submitting a pull request, you agree to the terms of our [Contributor License
 
 ## Support
 
-- 📚 [Documentation](https://github.com/asachs01/autotask-mcp/wiki)
-- 🐛 [Issue Tracker](https://github.com/asachs01/autotask-mcp/issues)
-- 💬 [Discussions](https://github.com/asachs01/autotask-mcp/discussions)
+- 📚 [Documentation](https://github.com/wyre-technology/autotask-mcp/wiki)
+- 🐛 [Issue Tracker](https://github.com/wyre-technology/autotask-mcp/issues)
+- 💬 [Discussions](https://github.com/wyre-technology/autotask-mcp/discussions)
 
 ## Acknowledgments
 
