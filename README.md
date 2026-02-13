@@ -13,6 +13,12 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that p
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@wyre-technology/autotask-mcp/badge" alt="Autotask MCP server" />
 </a>
 
+## One-Click Deployment
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/wyre-technology/autotask-mcp/tree/main)
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/wyre-technology/autotask-mcp)
+
 ## Quick Start
 
 **Claude Desktop** — download, open, done:
