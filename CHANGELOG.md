@@ -1,3 +1,10 @@
+# [2.7.0](https://github.com/wyre-technology/autotask-mcp/compare/v2.6.0...v2.7.0) (2026-02-13)
+
+
+### Features
+
+* add DigitalOcean and Cloudflare deploy infrastructure and badges ([b68bad5](https://github.com/wyre-technology/autotask-mcp/commit/b68bad5b7406ea17a0de4fe16ce65d75f7cb14d0))
+
 # [2.6.0](https://github.com/wyre-technology/autotask-mcp/compare/v2.5.3...v2.6.0) (2026-02-10)
 
 
