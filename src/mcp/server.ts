@@ -3,7 +3,6 @@
 // Supports both local (env-based) and gateway (header-based) credential modes
 
 import { createServer, IncomingMessage, ServerResponse, Server as HttpServer } from 'node:http';
-import { randomUUID } from 'node:crypto';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -26,23 +25,39 @@ import { AutotaskToolHandler } from '../handlers/tool.handler.js';
 
 export class AutotaskMcpServer {
   private server: Server;
+  private config: McpServerConfig;
   private autotaskService: AutotaskService;
   private resourceHandler: AutotaskResourceHandler;
   private toolHandler: AutotaskToolHandler;
   private logger: Logger;
   private envConfig: EnvironmentConfig | undefined;
   private httpServer?: HttpServer;
-  private httpTransport?: StreamableHTTPServerTransport;
 
   constructor(config: McpServerConfig, logger: Logger, envConfig?: EnvironmentConfig) {
     this.logger = logger;
+    this.config = config;
     this.envConfig = envConfig;
-    
-    // Initialize the MCP server
-    this.server = new Server(
+
+    // Initialize Autotask service
+    this.autotaskService = new AutotaskService(config, logger);
+
+    // Initialize handlers
+    this.resourceHandler = new AutotaskResourceHandler(this.autotaskService, logger);
+    this.toolHandler = new AutotaskToolHandler(this.autotaskService, logger);
+
+    // Create default server (used for stdio mode)
+    this.server = this.createFreshServer();
+  }
+
+  /**
+   * Create a fresh MCP Server with all handlers registered.
+   * Called per-request in HTTP (stateless) mode so each initialize gets a clean server.
+   */
+  private createFreshServer(): Server {
+    const server = new Server(
       {
-        name: config.name,
-        version: config.version,
+        name: this.config.name,
+        version: this.config.version,
       },
       {
         capabilities: {
@@ -58,27 +73,28 @@ export class AutotaskMcpServer {
       }
     );
 
-    // Initialize Autotask service
-    this.autotaskService = new AutotaskService(config, logger);
-    
-    // Initialize handlers
-    this.resourceHandler = new AutotaskResourceHandler(this.autotaskService, logger);
-    this.toolHandler = new AutotaskToolHandler(this.autotaskService, logger);
+    server.onerror = (error) => {
+      this.logger.error('MCP Server error:', error);
+    };
 
-    // Pass server reference to tool handler for elicitation support
-    this.toolHandler.setServer(this.server);
+    server.oninitialized = () => {
+      this.logger.info('MCP Server initialized and ready to serve requests');
+    };
 
-    this.setupHandlers();
+    this.setupHandlers(server);
+    this.toolHandler.setServer(server);
+
+    return server;
   }
 
   /**
    * Set up all MCP request handlers
    */
-  private setupHandlers(): void {
+  private setupHandlers(server: Server): void {
     this.logger.info('Setting up MCP request handlers...');
 
     // List available resources
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    server.setRequestHandler(ListResourcesRequestSchema, async () => {
       try {
         this.logger.debug('Handling list resources request');
         const resources = await this.resourceHandler.listResources();
@@ -93,7 +109,7 @@ export class AutotaskMcpServer {
     });
 
     // Read a specific resource
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       try {
         this.logger.debug(`Handling read resource request for: ${request.params.uri}`);
         const content = await this.resourceHandler.readResource(request.params.uri);
@@ -108,7 +124,7 @@ export class AutotaskMcpServer {
     });
 
     // List available tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+    server.setRequestHandler(ListToolsRequestSchema, async () => {
       try {
         this.logger.debug('Handling list tools request');
         const tools = await this.toolHandler.listTools();
@@ -123,7 +139,7 @@ export class AutotaskMcpServer {
     });
 
     // Call a tool
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         this.logger.debug(`Handling tool call: ${request.params.name}`);
         const result = await this.toolHandler.callTool(
@@ -153,16 +169,6 @@ export class AutotaskMcpServer {
     const transportType = this.envConfig?.transport?.type || 'stdio';
     this.logger.info(`Starting Autotask MCP Server with ${transportType} transport...`);
 
-    // Set up error handling
-    this.server.onerror = (error) => {
-      this.logger.error('MCP Server error:', error);
-    };
-
-    // Set up initialization callback
-    this.server.oninitialized = () => {
-      this.logger.info('MCP Server initialized and ready to serve requests');
-    };
-
     if (transportType === 'http') {
       await this.startHttpTransport();
     } else {
@@ -188,11 +194,6 @@ export class AutotaskMcpServer {
     const host = this.envConfig?.transport?.host || '0.0.0.0';
     const isGatewayMode = this.envConfig?.auth?.mode === 'gateway';
 
-    this.httpTransport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
-      enableJsonResponse: true,
-    });
-
     this.httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
@@ -208,8 +209,19 @@ export class AutotaskMcpServer {
         return;
       }
 
-      // MCP endpoint
+      // MCP endpoint — stateless: fresh server + transport per request
       if (url.pathname === '/mcp') {
+        // Only POST is supported in stateless mode
+        if (req.method !== 'POST') {
+          res.writeHead(405, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            jsonrpc: '2.0',
+            error: { code: -32000, message: 'Method not allowed' },
+            id: null,
+          }));
+          return;
+        }
+
         // In gateway mode, extract credentials from headers
         if (isGatewayMode) {
           const credentials = this.extractGatewayCredentials(req);
@@ -231,7 +243,31 @@ export class AutotaskMcpServer {
           this.updateCredentials(credentials);
         }
 
-        this.httpTransport!.handleRequest(req, res);
+        // Stateless: create fresh server + transport for each request
+        const server = this.createFreshServer();
+        const transport = new StreamableHTTPServerTransport({
+          enableJsonResponse: true,
+        });
+
+        res.on('close', () => {
+          transport.close();
+          server.close();
+        });
+
+        server.connect(transport as unknown as Transport).then(() => {
+          transport.handleRequest(req, res);
+        }).catch((err) => {
+          this.logger.error('MCP transport error:', err);
+          if (!res.headersSent) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              jsonrpc: '2.0',
+              error: { code: -32603, message: 'Internal error' },
+              id: null,
+            }));
+          }
+        });
+
         return;
       }
 
@@ -239,8 +275,6 @@ export class AutotaskMcpServer {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found', endpoints: ['/mcp', '/health'] }));
     });
-
-    await this.server.connect(this.httpTransport as unknown as Transport);
 
     await new Promise<void>((resolve) => {
       this.httpServer!.listen(port, host, () => {
