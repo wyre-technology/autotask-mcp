@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/wyre-technology/autotask-mcp/compare/v2.7.0...v2.7.1) (2026-02-15)
+
+
+### Bug Fixes
+
+* use stateless per-request server pattern for HTTP transport ([e8c6326](https://github.com/wyre-technology/autotask-mcp/commit/e8c6326e3bc26aa6eba773b298ae4a72336b8ba5))
+
 # [2.7.0](https://github.com/wyre-technology/autotask-mcp/compare/v2.6.0...v2.7.0) (2026-02-13)
 
 
