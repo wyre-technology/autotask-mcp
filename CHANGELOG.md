@@ -1,3 +1,10 @@
+## [2.7.2](https://github.com/wyre-technology/autotask-mcp/compare/v2.7.1...v2.7.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* **docker:** drop arm64 platform to fix QEMU build failures ([038f21c](https://github.com/wyre-technology/autotask-mcp/commit/038f21cfc547e3c915db6bb13f3324702f53b44b))
+
 ## [2.7.1](https://github.com/wyre-technology/autotask-mcp/compare/v2.7.0...v2.7.1) (2026-02-15)
 
 
